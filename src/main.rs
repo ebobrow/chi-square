@@ -1,6 +1,7 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fs};
 
 use clap::Parser;
+use pyo3::{prelude::*, types::IntoPyDict};
 use rand::Rng;
 
 #[derive(Parser)]
@@ -18,12 +19,20 @@ struct Args {
     df: usize,
 }
 
-fn main() {
+fn main() -> PyResult<()> {
     let args = Args::parse();
-    run_random(args.sets, args.reps, args.df);
+    let results = run_random(args.sets, args.reps, args.df);
+
+    Python::with_gil(|py| {
+        let module = PyModule::from_code(py, &fs::read_to_string("main.py").unwrap(), "", "")?;
+        let func: Py<PyAny> = module.getattr("main")?.into();
+        func.call1(py, (results.into_py_dict(py),))?;
+
+        Ok(())
+    })
 }
 
-fn run_random(sets: usize, reps: usize, df: usize) {
+fn run_random(sets: usize, reps: usize, df: usize) -> HashMap<usize, Vec<f64>> {
     let mut rng = rand::thread_rng();
     let mut results: HashMap<usize, Vec<f64>> = HashMap::new();
 
@@ -49,7 +58,7 @@ fn run_random(sets: usize, reps: usize, df: usize) {
             entry.push(chis.iter().sum());
         }
     }
-    println!("{:#?}", results);
+    results
 }
 
 fn chi(o: f64, e: f64) -> f64 {
