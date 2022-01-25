@@ -36,15 +36,15 @@ fn run_random(sets: usize, reps: usize, df: usize) -> HashMap<usize, Vec<f64>> {
     let mut rng = rand::thread_rng();
     let mut results: HashMap<usize, Vec<f64>> = HashMap::new();
 
-    for _ in 0..sets {
-        for n in 1..=df {
-            let mut flips = Vec::new();
+    for n in 1..=df {
+        let expected_frequency = reps as f64 / (n as f64 + 1.0);
+        for _ in 0..sets {
+            let mut flips = Vec::with_capacity(reps);
             for _ in 0..=reps {
                 let num = rng.gen_range(0..=n);
                 flips.push(num);
             }
-            let expected_frequency = reps as f64 / (n as f64 + 1.0);
-            let mut chis = Vec::new();
+            let mut chis = Vec::with_capacity(n);
             for i in 0..=n {
                 let observed_frequency = flips
                     .iter()
