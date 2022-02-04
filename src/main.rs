@@ -46,15 +46,11 @@ fn run_random(sets: usize, reps: usize, df: usize) -> HashMap<usize, Vec<f64>> {
             }
             let mut chis = Vec::with_capacity(n);
             for i in 0..=n {
-                let observed_frequency = flips
-                    .iter()
-                    .filter(|res| res == &&i)
-                    .collect::<Vec<_>>()
-                    .len() as f64;
-                let chi = chi(observed_frequency as f64, expected_frequency);
+                let observed_frequency = flips.iter().filter(|res| res == &&i).count() as f64;
+                let chi = chi(observed_frequency, expected_frequency);
                 chis.push(chi);
             }
-            let entry = results.entry(n).or_default();
+            let entry = results.entry(n).or_insert(Vec::with_capacity(sets));
             entry.push(chis.iter().sum());
         }
     }
