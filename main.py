@@ -35,7 +35,7 @@ def main(data):
 
     # Show difference from expected
     print("\nDifference: \n")
-    print(table.subtract(expected))
+    print(table.subtract(expected).abs())
 
     # Display graphs
     # df.plot.hist(subplots=True, bins=20)
@@ -46,4 +46,4 @@ def main(data):
         file.write("# Chi Square\n\n")
         file.write(table.to_markdown())
         file.write("\n## Difference from actual values\n\n")
-        file.write(table.subtract(expected).to_markdown())
+        file.write(table.subtract(expected).abs().to_markdown())
