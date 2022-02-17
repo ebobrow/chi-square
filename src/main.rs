@@ -17,15 +17,48 @@ struct Args {
     /// Max degrees of freedom
     #[clap(short, long, default_value_t = 10)]
     df: usize,
+
+    /// If set, run testing mode
+    #[clap(short, long)]
+    test: bool,
 }
 
 fn main() -> PyResult<()> {
     let args = Args::parse();
+    if args.test {
+        testing_mode(args)
+    } else {
+        normal_mode(args)
+    }
+}
+
+fn normal_mode(args: Args) -> PyResult<()> {
     let results = run_random(args.sets, args.reps, args.df);
 
     Python::with_gil(|py| {
         let module = PyModule::from_code(py, &fs::read_to_string("main.py").unwrap(), "", "")?;
         let func: Py<PyAny> = module.getattr("main")?.into();
+        func.call1(py, (results.into_py_dict(py),))?;
+
+        Ok(())
+    })
+}
+
+fn testing_mode(args: Args) -> PyResult<()> {
+    let mut results = HashMap::new();
+    for sets in (0..=args.sets).step_by(10) {
+        for reps in (0..=args.reps).step_by(10) {
+            let mut res = Vec::new();
+            for _ in 0..5 {
+                res.push(run_random(sets, reps, 5));
+            }
+            results.insert((sets, reps), res);
+        }
+    }
+
+    Python::with_gil(|py| {
+        let module = PyModule::from_code(py, &fs::read_to_string("main.py").unwrap(), "", "")?;
+        let func: Py<PyAny> = module.getattr("accuracy")?.into();
         func.call1(py, (results.into_py_dict(py),))?;
 
         Ok(())
