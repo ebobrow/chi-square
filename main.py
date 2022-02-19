@@ -50,7 +50,7 @@ def main(data):
         file.write("\n## Difference from actual values\n\n")
         file.write(table.subtract(expected).abs().to_markdown())
 
-def accuracy(data):
+def mean_dif(data):
     expected = pd.DataFrame({
                                 1: [3.841, 6.635],
                                 2: [5.991, 9.210],
@@ -60,19 +60,18 @@ def accuracy(data):
                             },
                             index=['95%', '99%'])
 
+    df = pd.DataFrame(data)
+    df = df[sorted(df.columns)]
+    return df.agg([q_95, q_99]).subtract(expected).abs().mean().mean()
+
+def accuracy(data):
     # TODO: This is slow
-    results = {}
-    for x in data:
-        results[x] = []
-        for j in data[x]:
-            df = pd.DataFrame(j)
-            df = df[sorted(df.columns)]
-            table = df.agg([q_95, q_99]).subtract(expected).abs()
-            results[x].append(table.mean().mean())
-    results = pd.DataFrame(results).mean()
+    results = pd.DataFrame(data).applymap(mean_dif).mean()
+    print(results)
+
     localtime = time.localtime(time.time())
     print("Python finished: %d:%d:%d" %(localtime.tm_hour,localtime.tm_min,localtime.tm_sec))
-    print(results)
+
     sets, reps = zip(*results.index)
     ax = plt.figure().add_subplot(projection='3d')
     ax.scatter(sets, reps, results.values)
