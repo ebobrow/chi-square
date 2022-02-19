@@ -1,5 +1,6 @@
 use std::{collections::HashMap, fs};
 
+use chrono::prelude::*;
 use clap::Parser;
 use pyo3::{prelude::*, types::IntoPyDict};
 use rand::Rng;
@@ -24,6 +25,8 @@ struct Args {
 }
 
 fn main() -> PyResult<()> {
+    let local: DateTime<Local> = Local::now();
+    println!("Program start: {}", local.format("%H:%M:%S"));
     let args = Args::parse();
     if args.test {
         testing_mode(args)
@@ -46,8 +49,8 @@ fn normal_mode(args: Args) -> PyResult<()> {
 
 fn testing_mode(args: Args) -> PyResult<()> {
     let mut results = HashMap::new();
-    for sets in (0..=args.sets).step_by(10) {
-        for reps in (0..=args.reps).step_by(10) {
+    for sets in (10..=args.sets).step_by(10) {
+        for reps in (10..=args.reps).step_by(10) {
             let mut res = Vec::new();
             for _ in 0..5 {
                 res.push(run_random(sets, reps, 5));
@@ -55,6 +58,9 @@ fn testing_mode(args: Args) -> PyResult<()> {
             results.insert((sets, reps), res);
         }
     }
+
+    let local: DateTime<Local> = Local::now();
+    println!("Python start: {}", local.format("%H:%M:%S"));
 
     Python::with_gil(|py| {
         let module = PyModule::from_code(py, &fs::read_to_string("main.py").unwrap(), "", "")?;

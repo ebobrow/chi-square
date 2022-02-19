@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from functools import partial
 from mpl_toolkits.mplot3d import Axes3D
+import time
 
 q_95 = partial(pd.Series.quantile, q=0.95)
 q_95.__name__ = "95%"
@@ -69,6 +70,8 @@ def accuracy(data):
             table = df.agg([q_95, q_99]).subtract(expected).abs()
             results[x].append(table.mean().mean())
     results = pd.DataFrame(results).mean()
+    localtime = time.localtime(time.time())
+    print("Python finished: %d:%d:%d" %(localtime.tm_hour,localtime.tm_min,localtime.tm_sec))
     print(results)
     sets, reps = zip(*results.index)
     ax = plt.figure().add_subplot(projection='3d')
