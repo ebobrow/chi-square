@@ -38,6 +38,9 @@ fn main() -> PyResult<()> {
 fn normal_mode(args: Args) -> PyResult<()> {
     let results = run_random(args.sets, args.reps, args.df);
 
+    let local: DateTime<Local> = Local::now();
+    println!("Python start : {}", local.format("%H:%M:%S"));
+
     Python::with_gil(|py| {
         let module = PyModule::from_code(py, &fs::read_to_string("main.py").unwrap(), "", "")?;
         let func: Py<PyAny> = module.getattr("main")?.into();

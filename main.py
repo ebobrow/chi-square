@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from functools import partial
-from mpl_toolkits.mplot3d import Axes3D
+# from mpl_toolkits.mplot3d import Axes3D
 import time
 
 q_95 = partial(pd.Series.quantile, q=0.95)
@@ -31,13 +31,18 @@ def main(data):
                             },
                             index=['95%', '99%'])
 
-    # Show 95th and 99th quantile
     table = df.agg([q_95, q_99])
+    diff = table.subtract(expected).abs()
+
+    localtime = time.localtime()
+    print("Python end   : %d:%d:%d\n" %(localtime.tm_hour,localtime.tm_min,localtime.tm_sec))
+
+    # Show 95th and 99th quantile
     print(table)
 
     # Show difference from expected
     print("\nDifference: \n")
-    print(table.subtract(expected).abs())
+    print(diff)
 
     # Display graphs
     # df.plot.hist(subplots=True, bins=20)
@@ -48,7 +53,7 @@ def main(data):
         file.write("# Chi Square\n\n")
         file.write(table.to_markdown())
         file.write("\n## Difference from actual values\n\n")
-        file.write(table.subtract(expected).abs().to_markdown())
+        file.write(diff.to_markdown())
 
 def mean_dif(data):
     expected = pd.DataFrame({
@@ -67,9 +72,8 @@ def mean_dif(data):
 def accuracy(data):
     # TODO: This is slow
     results = pd.DataFrame(data).applymap(mean_dif).mean()
-    print(results)
 
-    localtime = time.localtime(time.time())
+    localtime = time.localtime()
     print("Python finished: %d:%d:%d" %(localtime.tm_hour,localtime.tm_min,localtime.tm_sec))
 
     sets, reps = zip(*results.index)
