@@ -1,6 +1,5 @@
-use std::{collections::HashMap, fs};
+use std::{collections::HashMap, fs, time::Instant};
 
-use chrono::prelude::*;
 use clap::Parser;
 use pyo3::{prelude::*, types::IntoPyDict};
 use rand::Rng;
@@ -25,8 +24,6 @@ struct Args {
 }
 
 fn main() -> PyResult<()> {
-    let local: DateTime<Local> = Local::now();
-    println!("Program start: {}", local.format("%H:%M:%S"));
     let args = Args::parse();
     if args.test {
         testing_mode(args)
@@ -36,10 +33,10 @@ fn main() -> PyResult<()> {
 }
 
 fn normal_mode(args: Args) -> PyResult<()> {
+    let start = Instant::now();
     let results = run_random(args.sets, args.reps, args.df);
 
-    let local: DateTime<Local> = Local::now();
-    println!("Python start : {}", local.format("%H:%M:%S"));
+    println!("Rust finished in {:?}", start.elapsed());
 
     Python::with_gil(|py| {
         let module = PyModule::from_code(py, &fs::read_to_string("main.py").unwrap(), "", "")?;
@@ -51,6 +48,7 @@ fn normal_mode(args: Args) -> PyResult<()> {
 }
 
 fn testing_mode(args: Args) -> PyResult<()> {
+    let start = Instant::now();
     let mut results = HashMap::new();
     for sets in (10..=args.sets).step_by(10) {
         for reps in (10..=args.reps).step_by(10) {
@@ -62,8 +60,7 @@ fn testing_mode(args: Args) -> PyResult<()> {
         }
     }
 
-    let local: DateTime<Local> = Local::now();
-    println!("Python start: {}", local.format("%H:%M:%S"));
+    println!("Rust finished in {:?}", start.elapsed());
 
     Python::with_gil(|py| {
         let module = PyModule::from_code(py, &fs::read_to_string("main.py").unwrap(), "", "")?;
