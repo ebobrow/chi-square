@@ -39,8 +39,11 @@ fn normal_mode(args: Args) -> PyResult<()> {
     println!("Rust finished in {:?}", start.elapsed());
 
     Python::with_gil(|py| {
+        println!("r1");
         let module = PyModule::from_code(py, &fs::read_to_string("main.py").unwrap(), "", "")?;
+        println!("r2");
         let func: Py<PyAny> = module.getattr("main")?.into();
+        println!("r3");
         func.call1(py, (results.into_py_dict(py),))?;
 
         Ok(())

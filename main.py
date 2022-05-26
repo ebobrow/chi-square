@@ -11,12 +11,18 @@ q_99.__name__ = "99%"
 
 
 def main(data):
-    start = time.time()
+    # start = time.time()
+    print(1)
     df = pd.DataFrame(data)
+    print(2)
     df = df[sorted(df.columns)]
+    print("First df")
+    print(df)
     # df.to_csv("data.csv", mode="a", index=False)
     df.to_csv("data.csv", mode="a", index=False, header=False)
     df = pd.read_csv("data.csv")
+    print("Second df")
+    print(df)
     expected = pd.DataFrame({
         "1": [3.841, 6.635],
         "2": [5.991, 9.210],
@@ -32,17 +38,19 @@ def main(data):
         index=['95%', '99%'])
 
     table = df.agg([q_95, q_99])
+    print(table)
     diff = table.subtract(expected).abs()
+    print(diff)
 
-    elapsed = time.time() - start
-    print("Python finished in %d seconds" % elapsed)
+    # elapsed = time.time() - start
+    # print("Python finished in %d seconds" % elapsed)
 
     # Show 95th and 99th quantile
-    print(table)
+    # print(table)
 
     # Show difference from expected
-    print("\nDifference: \n")
-    print(diff)
+    # print("\nDifference: \n")
+    # print(diff)
 
     # Display graphs
     # df.plot.hist(subplots=True, bins=20)
